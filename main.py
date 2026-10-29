@@ -5,40 +5,47 @@ import json
 import dns_info
 import whois_info
 import ip_info
-import email_info
+import meil_info
 
-# Kõik moodulid ühes kohas. Uue mooduli lisamiseks: impordi ja lisa siia.
-MOODULID = {
-    "dns": dns_info,
-    "whois": whois_info,
-    "ip": ip_info,
-    "email": email_info,
-}
-
-DOMEENI_MUSTER = re.compile(
-    r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$"
-)
+DOMEENI_MUSTER = r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$"
 
 
 def puhasta_domeen(sisend):
     """'https://www.Example.ee/leht' -> 'example.ee'. Vigase sisendi korral None."""
     d = sisend.strip().lower()
     d = re.sub(r"^[a-z]+://", "", d)
-    d = d.split("/")[0].split(":")[0]
+    d = d.split("/")[0]
+    d = d.split(":")[0]
     if d.startswith("www."):
         d = d[4:]
-    if not DOMEENI_MUSTER.match(d):
+    if re.match(DOMEENI_MUSTER, d) is None:
         return None
     return d
 
 
 def kogu_koik(domeen):
     tulemus = {"domeen": domeen}
-    for nimi, moodul in MOODULID.items():
-        try:
-            tulemus[nimi] = moodul.kogu(domeen)
-        except Exception as e:
-            tulemus[nimi] = {"viga": f"{type(e).__name__}: {e}"}
+
+    try:
+        tulemus["dns"] = dns_info.kogu(domeen)
+    except Exception as e:
+        tulemus["dns"] = {"viga": str(e)}
+
+    try:
+        tulemus["whois"] = whois_info.kogu(domeen)
+    except Exception as e:
+        tulemus["whois"] = {"viga": str(e)}
+
+    try:
+        tulemus["ip"] = ip_info.kogu(domeen)
+    except Exception as e:
+        tulemus["ip"] = {"viga": str(e)}
+
+    try:
+        tulemus["meil"] = meil_info.kogu(domeen)
+    except Exception as e:
+        tulemus["meil"] = {"viga": str(e)}
+
     return tulemus
 
 
