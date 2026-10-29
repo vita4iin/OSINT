@@ -6,6 +6,7 @@ import dns_info
 import whois_info
 import ip_info
 import email_info
+import raport
 
 DOMEENI_MUSTER = r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$"
 
@@ -60,7 +61,8 @@ def main():
         sys.exit(1)
 
     tulemus = kogu_koik(domeen)
-    print(json.dumps(tulemus, indent=2, ensure_ascii=False, default=str))
+    print(raport.koosta(tulemus))
+    #print(json.dumps(tulemus, indent=2, ensure_ascii=False, default=str))
 
 
 if __name__ == "__main__":
