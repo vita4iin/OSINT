@@ -9,8 +9,7 @@ def kysi(domeen, tyyp):
         vastus = dns.resolver.resolve(domeen, tyyp, lifetime=5)
     except dns.resolver.NoAnswer:
         return []
-    return [kirje.to_text() for kirje in vastus]
-
+    return [kirje.to_text().rstrip(".") for kirje in vastus]
 
 def kogu(domeen):
     tulemus = {}
