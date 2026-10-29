@@ -5,7 +5,7 @@ import json
 import dns_info
 import whois_info
 import ip_info
-import meil_info
+import email_info
 
 DOMEENI_MUSTER = r"^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$"
 
@@ -42,9 +42,9 @@ def kogu_koik(domeen):
         tulemus["ip"] = {"viga": str(e)}
 
     try:
-        tulemus["meil"] = meil_info.kogu(domeen)
+        tulemus["email"] = email_info.kogu(domeen)
     except Exception as e:
-        tulemus["meil"] = {"viga": str(e)}
+        tulemus["email"] = {"viga": str(e)}
 
     return tulemus
 
