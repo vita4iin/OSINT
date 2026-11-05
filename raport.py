@@ -14,7 +14,8 @@ def dns_osa(d):
     read.append("AAAA:   " + vaartus(sorted(d.get("AAAA") or [])))
     read.append("NS:     " + vaartus(d.get("NS")))
     read.append("MX:     " + vaartus(d.get("MX")))
-    read.append("TXT:    " + str(len(d.get("TXT") or [])) + " kirjet")
+    for i in range(len(d.get("TXT"))):
+        read.append(f"TXT{i+1}:    " + d.get("TXT")[i])
     return "\n".join(read)
 
 
@@ -42,7 +43,9 @@ def ip_osa(d):
             vaartus(kirje.get("ip")).ljust(18)
             + vaartus(kirje.get("asn")).ljust(9)
             + vaartus(kirje.get("organisatsioon")) + "  "
-            + vaartus(kirje.get("riik"))
+            + vaartus(kirje.get("riik")) + "  "
+            + vaartus(kirje.get("linn")) + "  "
+            + vaartus(kirje.get("hostinimi"))
         )
     if not read:
         read.append("-")
@@ -52,8 +55,29 @@ def ip_osa(d):
 def email_osa(d):
     if "viga" in d:
         return "VIGA: " + d["viga"]
-    return "(sisu tuleb hiljem)"
+    read = []
 
+    mx_read = []
+    for m in d["mx"]:
+        mx_read.append(str(m["prioriteet"]) + " " + m["server"])
+    read.append("MX:       " + vaartus(mx_read))
+
+    read.append("SPF:      " + vaartus(d["spf"]["lopp"]) + "  (" + str(d["spf"]["punktid"]) + "/2)")
+    read.append("DMARC:    " + vaartus(d["dmarc"]["poliitika"]) + "  (" + str(d["dmarc"]["punktid"]) + "/2)")
+
+    dkim_read = []
+    for v in d["dkim"]["votmed"]:
+        dkim_read.append(v["selektor"] + " " + v["tugevus"])
+    read.append("DKIM:     " + vaartus(dkim_read) + "  (" + str(d["dkim"]["punktid"]) + "/1)")
+
+    read.append("MTA-STS:  " + vaartus(d["mta_sts"]["reziim"]) + "  (" + str(d["mta_sts"]["punktid"]) + "/1)")
+    read.append("Kokku:    " + str(d["kokku"]) + " / " + str(d["max"]))
+
+    for nimi in ["spf", "dmarc", "dkim", "mta_sts"]:
+        if d[nimi]["hoiatus"] is not None:
+            read.append("  ! " + d[nimi]["hoiatus"])
+
+    return "\n".join(read)
 
 def ns_vordlus(dns, whois):
     if "viga" in dns or "viga" in whois:
